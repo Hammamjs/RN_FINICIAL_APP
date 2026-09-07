@@ -1,8 +1,6 @@
 Financial Management Mobile App
 
-A React Native mobile application for a financial management platform, built to provide a mobile experience alongside an existing web application.
-
-The mobile application connects to an existing Node.js/Express backend that powers the platform's backend services and the existing website. The React Native application consumes the same backend APIs to provide users and administrators with a mobile interface.
+A React Native mobile application for an existing financial management platform. The application extends the existing web platform to mobile devices while using the same Node.js and Express backend.
 
 Project Status: In Development
 
@@ -12,37 +10,36 @@ This project is the mobile application for an existing financial platform.
 
 The platform consists of:
 
-An existing web application
-An existing Node.js/Express backend
-This React Native mobile application
+An existing React web application
+An existing Node.js / Express backend
+A React Native mobile application
 
-Rather than creating a separate backend specifically for mobile, the application communicates with the existing backend through its API layer.
+The mobile application does not have a separate backend. It communicates with the existing backend through API services and uses the same backend infrastructure as the existing web application.
 
-                    ┌─────────────────────┐
-                    │   Node.js / Express │
-                    │      Backend        │
-                    └──────────┬──────────┘
-                               │
-                 ┌─────────────┴─────────────┐
-                 │                           │
-                 ▼                           ▼
-        ┌─────────────────┐       ┌─────────────────┐
-        │ Existing Website│       │ React Native    │
-        │                 │       │ Mobile App      │
-        │     React       │       │                 │
-        └─────────────────┘       └─────────────────┘
+                    Financial Platform
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
+     Existing Website            React Native App
+          React                       Mobile
+             |                           |
+             +-------------+-------------+
+                           |
+                           v
+                  Node.js / Express
+                      Backend API
+                           |
+                           v
+                        Database
 
-This architecture allows the web and mobile applications to share the same backend services, business rules, authentication system, and data.
 
-Application Features
+This architecture allows both the web and mobile applications to share backend services, authentication, business logic, and data.
 
-The mobile application is organized around several core areas of the financial platform.
-
+Features
 Authentication
 
-The authentication system connects to the existing backend authentication services.
-
-Features include:
+The mobile application integrates with the existing backend authentication system.
 
 User registration
 User sign-in
@@ -55,68 +52,56 @@ Token refresh
 Secure token storage
 Logout
 
-The authentication layer is separated into API services, hooks, session management, validation schemas, and state management.
+Authentication functionality is separated into API services, hooks, schemas, stores, and session management.
 
 Accounts
 
-Users can manage their financial accounts through the mobile application.
-
-The accounts feature includes:
+The accounts feature provides functionality for managing user financial accounts.
 
 Account listing
 Account information
-Adding accounts
+Add account
 Account validation
 Reusable account components
 Transfers
 
 The application provides a mobile interface for financial transfers.
 
-The transfer flow includes:
-
 Transfer initiation
 Transfer details
 Currency conversion
-Transfer-related API communication
-Transfer UI components
+Transfer API integration
+Transfer components
 
-The mobile application relies on the existing backend for processing and managing transfer-related operations.
+Transfer processing is handled by the existing backend.
 
 Currencies
 
-The currency feature communicates with the backend currency services.
+The currency feature communicates with the existing backend currency services.
 
-It provides the foundation for:
-
-Retrieving supported currencies
-Displaying currency information
+Retrieve supported currencies
+Display currency information
 Currency conversion
 Currency-related financial operations
 Orders
 
 Users can access their financial orders through the mobile application.
 
-The orders feature contains:
-
 Orders API integration
 Order listing
-Order-related components
-Order data types
+Order components
+Order types
 Notifications
 
-The application provides users with access to their notifications.
-
-The notification architecture supports:
+The notification system provides users with access to platform notifications.
 
 User notifications
 Notification API integration
 Broadcast notifications
-Notification-related hooks and components
+Notification hooks and components
 User Profile
 
-Users can manage their account information through the mobile application.
-
-The user feature includes:
+Users can manage their profile and account information.
 
 User profiles
 Profile management
@@ -126,160 +111,202 @@ User updates
 User role management
 Admin Application
 
-The mobile application also contains a dedicated administrative experience.
+The application includes a dedicated administrative experience.
 
-Administrators have access to a separate set of screens and features.
+Administrators have access to:
 
 Admin
-│
-├── Dashboard
-├── Users
-├── Currencies
-├── Broadcast
-├── Account
-└── Admin Profile
+|
++-- Dashboard
++-- Users
++-- Currencies
++-- Broadcast
++-- Account
++-- Admin Profile
 
-Administrative functionality communicates with the same existing Node.js/Express backend.
 
-The separation between user and administrator routes helps keep role-specific functionality organized.
+Administrative functionality communicates with the same existing Node.js / Express backend.
+
+User and administrator routes are separated to keep role-specific functionality organized.
 
 Project Architecture
 
-The React Native application uses a feature-based architecture.
+The React Native application follows a feature-based architecture.
 
 src/
-├── app/
-├── constants/
-├── features/
-├── i18n/
-└── shared/
+|
++-- app/
++-- constants/
++-- features/
++-- i18n/
++-- shared/
+
+
+This structure separates application routing, business features, shared functionality, configuration, and internationalization.
+
+Application Routes
+
+The app directory contains the application's routes and screens.
 
 app/
+|
++-- (admin)/
+|   +-- account.tsx
+|   +-- admin-profile.tsx
+|   +-- broadcast.tsx
+|   +-- currencies.tsx
+|   +-- dashboard.tsx
+|   +-- _layout.tsx
+|   +-- users.tsx
+|
++-- (auth)/
+|   +-- forgot-password.tsx
+|   +-- _layout.tsx
+|   +-- reset-password.tsx
+|   +-- sign-in.tsx
+|   +-- sign-up.tsx
+|   +-- verify-reset-code.tsx
+|
++-- (user)/
+|   +-- _layout.tsx
+|   +-- notifications.tsx
+|   +-- orders.tsx
+|   +-- profile.tsx
+|   +-- transfer/
+|       +-- details.tsx
+|       +-- index.tsx
+|       +-- _layout.tsx
+|
++-- index.tsx
++-- _layout.tsx
++-- onboarding.tsx
 
-Contains application routes and screens.
 
-app/
-├── (admin)/
-├── (auth)/
-├── (user)/
-├── index.tsx
-├── onboarding.tsx
-└── \_layout.tsx
-
-The route structure separates:
+The routes are organized into three main areas:
 
 Authentication
-User functionality
-Administrator functionality
-Shared application routes
+User application
+Administrator application
+Features Directory
+
+Business functionality is organized under the features directory.
+
 features/
+|
++-- accounts/
++-- auth/
++-- currencies/
++-- dashboards/
++-- notifications/
++-- orders/
++-- transfers/
++-- users/
 
-Contains the application's business features.
 
-features/
-├── accounts/
-├── auth/
-├── currencies/
-├── dashboards/
-├── notifications/
-├── orders/
-├── transfers/
-└── users/
+Each feature is responsible for its own domain and can contain dedicated API services, components, hooks, schemas, stores, and types.
 
-Each feature is organized independently and can contain its own:
+feature/
+|
++-- api/
++-- components/
++-- hooks/
++-- schema/
++-- services/
++-- store/
++-- types/
 
-api/
-components/
-hooks/
-schema/
-services/
-store/
-types/
 
-This keeps feature-specific logic separated and makes the application easier to maintain and extend.
+This approach keeps feature-specific logic isolated and makes the application easier to maintain and extend.
+
+Shared Layer
+
+The shared directory contains functionality that is reused across multiple features.
 
 shared/
+|
++-- api/
++-- components/
+|   +-- ui/
++-- context/
++-- hooks/
++-- lib/
 
-Contains reusable functionality used throughout the application.
 
-shared/
-├── api/
-├── components/
-├── context/
-├── hooks/
-└── lib/
-
-Examples include:
+The shared layer includes:
 
 API fetcher
-Theme management
-Language management
-Shared UI components
+Reusable UI components
+Theme providers
+Language providers
+Shared hooks
 Authentication utilities
 Error handling
 Secure token storage
 Role checking
-Shared hooks
 Backend Integration
 
-The mobile application does not have a separate backend.
+The React Native application communicates with the existing Node.js / Express backend.
 
-Instead, it communicates with the existing Node.js/Express backend through API services.
-
-React Native
-│
-▼
+React Native App
+       |
+       v
 Feature API Layer
-│
-▼
+       |
+       v
 Shared API Fetcher
-│
-▼
+       |
+       v
 Node.js / Express API
-│
-▼
+       |
+       v
 Existing Backend Services
-│
-▼
+       |
+       v
 Database
 
-Each major feature has its own API layer where required.
 
-For example:
+API communication is organized by feature.
 
 features/
-├── auth/
-│ └── api/
-├── currencies/
-│ └── api/
-├── orders/
-│ └── api/
-├── users/
-│ └── api/
-└── transfers/
-└── api/
+|
++-- auth/
+|   +-- api/
+|
++-- currencies/
+|   +-- api/
+|
++-- orders/
+|   +-- api/
+|
++-- users/
+|   +-- api/
+|
++-- transfers/
+    +-- api/
 
-This keeps communication with the existing backend organized according to business features.
+
+This allows each feature to communicate with the backend through a clearly defined API layer.
 
 Authentication Architecture
 
-Authentication is handled through a dedicated authentication module.
+Authentication is isolated within the auth feature.
 
 features/auth/
+|
++-- api/
++-- components/
++-- config/
++-- hooks/
++-- schema/
++-- services/
++-- store/
++-- types/
++-- utils/
 
-├── api/
-├── components/
-├── config/
-├── hooks/
-├── schema/
-├── services/
-├── store/
-├── types/
-└── utils/
 
 The authentication module handles the mobile application's interaction with the existing backend authentication system.
 
-It also provides:
+It provides:
 
 Authentication state
 Session handling
@@ -290,15 +317,17 @@ Google authentication
 Password management
 Internationalization
 
-The application supports multiple languages through the internal internationalization system.
+The application includes internationalization support.
 
 i18n/
-├── index.ts
-└── locales/
-├── ar.ts
-└── en.ts
+|
++-- index.ts
++-- locales/
+    +-- ar.ts
+    +-- en.ts
 
-Current languages:
+
+Currently supported languages:
 
 English
 Arabic
@@ -307,18 +336,20 @@ Language state and translation functionality are exposed through shared contexts
 
 Theming
 
-The application contains a centralized theme system.
+The application uses a centralized theme system.
 
 constants/
-└── theme.ts
+|
++-- theme.ts
 
-Theme functionality is supported through shared providers and hooks, allowing UI components to use a consistent design system throughout the application.
+
+Theme functionality is provided through shared providers and hooks, allowing components throughout the application to use a consistent design system.
 
 Security
 
-Because this application interacts with financial data and an existing backend, security is an important part of the mobile architecture.
+Because the application interacts with financial data, security is an important part of the architecture.
 
-The project includes dedicated functionality for:
+The mobile application includes functionality for:
 
 Secure token storage
 Authentication sessions
@@ -328,115 +359,224 @@ Role verification
 Password management
 API error handling
 
-The mobile application relies on the existing backend for authentication, authorization, validation, and business operations.
+The existing backend remains responsible for authentication, authorization, validation, and financial business operations.
 
-Production financial applications should additionally undergo appropriate security testing, backend security reviews, encryption reviews, auditing, monitoring, and compliance assessment.
+For production use, additional security testing, auditing, monitoring, encryption reviews, and compliance assessments should be performed.
 
-Project Structure
-
-Current source structure:
-
+Full Project Structure
 src/
-├── app/
-│ ├── (admin)/
-│ ├── (auth)/
-│ ├── (user)/
-│ ├── index.tsx
-│ ├── \_layout.tsx
-│ └── onboarding.tsx
-│
-├── constants/
-│ └── theme.ts
-│
-├── features/
-│ ├── accounts/
-│ ├── auth/
-│ ├── currencies/
-│ ├── dashboards/
-│ ├── notifications/
-│ ├── orders/
-│ ├── transfers/
-│ └── users/
-│
-├── i18n/
-│ ├── index.ts
-│ └── locales/
-│ ├── ar.ts
-│ └── en.ts
-│
-└── shared/
-├── api/
-├── components/
-├── context/
-├── hooks/
-└── lib/
+|
++-- app/
+|   |
+|   +-- (admin)/
+|   |   +-- account.tsx
+|   |   +-- admin-profile.tsx
+|   |   +-- broadcast.tsx
+|   |   +-- currencies.tsx
+|   |   +-- dashboard.tsx
+|   |   +-- _layout.tsx
+|   |   +-- users.tsx
+|   |
+|   +-- (auth)/
+|   |   +-- forgot-password.tsx
+|   |   +-- _layout.tsx
+|   |   +-- reset-password.tsx
+|   |   +-- sign-in.tsx
+|   |   +-- sign-up.tsx
+|   |   +-- verify-reset-code.tsx
+|   |
+|   +-- (user)/
+|   |   +-- _layout.tsx
+|   |   +-- notifications.tsx
+|   |   +-- orders.tsx
+|   |   +-- profile.tsx
+|   |   +-- transfer/
+|   |       +-- details.tsx
+|   |       +-- index.tsx
+|   |       +-- _layout.tsx
+|   |
+|   +-- index.tsx
+|   +-- _layout.tsx
+|   +-- onboarding.tsx
+|
++-- constants/
+|   +-- theme.ts
+|
++-- features/
+|   |
+|   +-- accounts/
+|   |   +-- components/
+|   |   +-- schema/
+|   |
+|   +-- auth/
+|   |   +-- api/
+|   |   +-- components/
+|   |   +-- config/
+|   |   +-- hooks/
+|   |   +-- schema/
+|   |   +-- services/
+|   |   +-- store/
+|   |   +-- types/
+|   |   +-- utils/
+|   |
+|   +-- currencies/
+|   |   +-- api/
+|   |   +-- components/
+|   |   +-- types/
+|   |
+|   +-- dashboards/
+|   |   +-- components/
+|   |   +-- hooks/
+|   |   +-- schema/
+|   |   +-- store/
+|   |   +-- types/
+|   |
+|   +-- notifications/
+|   |   +-- api/
+|   |   +-- components/
+|   |   +-- hooks/
+|   |   +-- types/
+|   |
+|   +-- orders/
+|   |   +-- api/
+|   |   +-- components/
+|   |   +-- types/
+|   |
+|   +-- transfers/
+|   |   +-- api/
+|   |   +-- components/
+|   |
+|   +-- users/
+|       +-- api/
+|       +-- components/
+|       +-- hooks/
+|       +-- schema/
+|       +-- store/
+|
++-- i18n/
+|   |
+|   +-- index.ts
+|   +-- locales/
+|       +-- ar.ts
+|       +-- en.ts
+|
++-- shared/
+    |
+    +-- api/
+    |   +-- fetcher.ts
+    |   +-- index.ts
+    |
+    +-- components/
+    |   +-- customMessage.tsx
+    |   +-- LanguageProvider.tsx
+    |   +-- onboardingComponent.tsx
+    |   +-- screen.tsx
+    |   +-- spinner.tsx
+    |   +-- tabBarProvider.tsx
+    |   +-- themeProvider.tsx
+    |   +-- ui/
+    |       +-- passwordInput.tsx
+    |       +-- textInput.tsx
+    |
+    +-- context/
+    |   +-- index.ts
+    |   +-- languageContext.ts
+    |   +-- tabBarContext.ts
+    |   +-- themeContext.ts
+    |
+    +-- hooks/
+    |   +-- index.ts
+    |   +-- useTabBar.ts
+    |   +-- useTheme.ts
+    |   +-- useTranslation.ts
+    |
+    +-- lib/
+        +-- catchError.ts
+        +-- checkAdminRole.ts
+        +-- secureTokenStorage.ts
 
-The current project contains approximately:
+
+The current project contains:
 
 58 directories
 107 files
 Design Principles
 
-The project is structured around several principles:
+The application is structured around the following principles:
 
 Feature-based architecture
 Separation of UI and business logic
 Reusable components
 Centralized API communication
 Shared authentication infrastructure
-Separation of user and admin functionality
+Separation of user and administrator functionality
 Type-safe development
 Reusable hooks and services
 Centralized theme management
 Internationalization
 Scalability
-Relationship With Existing Platform
+Existing Platform Architecture
 
-This mobile application is part of a larger existing platform rather than an isolated application.
+The mobile application is part of an existing financial platform.
 
                     Financial Platform
-                           │
-             ┌─────────────┴─────────────┐
-             │                           │
-             ▼                           ▼
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
       Existing Website            React Native App
-             │                           │
-             │                           │
-             └───────────┬───────────────┘
-                         │
-                         ▼
-                 Node.js / Express
-                     Backend API
-                         │
-                         ▼
-                      Database
+           React                       Mobile
+             |                           |
+             +-------------+-------------+
+                           |
+                           v
+                  Node.js / Express
+                      Backend API
+                           |
+                           v
+                        Database
 
-Both clients can communicate with the same backend infrastructure, allowing the mobile application to extend the existing platform to mobile devices without duplicating backend functionality.
+
+The existing website and React Native application use the same backend infrastructure.
+
+This allows the mobile application to extend the existing platform to mobile devices without duplicating backend functionality.
 
 Development Status
 
 The mobile application is currently under active development.
 
-The project has established the main application architecture, navigation structure, authentication layer, feature modules, API integration structure, shared infrastructure, user functionality, and administrative functionality.
+The project includes the foundation for:
 
-Further development will focus on completing, refining, testing, and expanding the mobile experience while maintaining compatibility with the existing backend.
+Application navigation
+Authentication
+User functionality
+Administrator functionality
+Account management
+Transfers
+Currency functionality
+Orders
+Notifications
+API integration
+Internationalization
+Theme management
+
+Development will continue with a focus on completing, testing, refining, and expanding the mobile experience while maintaining compatibility with the existing backend.
 
 Future Development
 
-Potential areas for continued development include:
+Potential areas for future development include:
 
-Additional financial features
-Enhanced transfer workflows
-Improved transaction history
-Advanced financial analytics
+Enhanced financial features
+Improved transfer workflows
+Transaction history
+Financial analytics
 Push notifications
-Enhanced admin functionality
-Improved error handling
+Enhanced administrator functionality
 Automated testing
 Performance optimization
-Security improvements
+Additional security improvements
 Additional localization
-UI/UX refinement
+UI and UX improvements
 License
 
 This project is currently under development as part of an existing financial platform.
