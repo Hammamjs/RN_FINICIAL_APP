@@ -1,13 +1,13 @@
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { Link } from 'expo-router';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+ KeyboardAvoidingView,
+ Platform,
+ Pressable,
+ ScrollView,
+ StyleSheet,
+ Text,
+ View,
 } from 'react-native';
 
 import Screen from '@/shared/components/screen';
@@ -22,9 +22,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSigninWithGoogle } from '../hooks/useSigninWithGoogle';
 import { useSignup } from '../hooks/useSignup';
 import {
-  DEFAULT_SIGNUP_VALUES,
-  SignUpValidation,
-  TSignUpValidation,
+ DEFAULT_SIGNUP_VALUES,
+ SignUpValidation,
+ TSignUpValidation,
 } from '../schema/signUp.validation';
 
 export function SignUpComponent() {
@@ -39,13 +39,17 @@ export function SignUpComponent() {
 
   const { t } = useTranslation();
 
-  const { signup, isLoading: isSigningUp, error: signupError } = useSignup();
+  const {
+    execute: signup,
+    isLoading: isSigningUp,
+    error: signupError,
+  } = useSignup();
 
   const handleSignup = form.handleSubmit(async (data) => {
     await signup(data);
   });
 
-  const { signinWithGoogle } = useSigninWithGoogle();
+  const { execute: signinWithGoogle } = useSigninWithGoogle();
 
   return (
     <Screen>

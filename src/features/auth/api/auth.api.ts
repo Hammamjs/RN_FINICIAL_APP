@@ -23,24 +23,19 @@ export async function signupApi(data: TSignUpValidation) {
   });
 }
 
-export async function updatePasswordApi(
-  data: TUpdatePasswordSchema,
-  accessToken: string,
-) {
+export async function updatePasswordApi(data: TUpdatePasswordSchema) {
   return authenticatedFetcher<{ message: string }>(
     BASE_ENDPOINT + '/update-password',
     {
       body: JSON.stringify(data),
       method: 'PATCH',
-      headers: { authorization: `Bearer ${accessToken}` },
     },
   );
 }
 
-export async function logoutApi(accessToken: string) {
-  return fetcher<void>(BASE_ENDPOINT + '/log-out', {
+export async function logoutApi() {
+  return authenticatedFetcher<void>(BASE_ENDPOINT + '/log-out', {
     method: 'POST',
-    headers: { authorization: `Bearer ${accessToken}` },
   });
 }
 
@@ -48,5 +43,34 @@ export async function signInWithGoogleApi(idToken: string) {
   return fetcher<AuthResponse>(BASE_ENDPOINT + '/google/mobile', {
     method: 'POST',
     body: JSON.stringify({ idToken }),
+  });
+}
+
+// TODO: test those functions
+export async function forgotPasswordApi(email: string) {
+  return fetcher<void>(BASE_ENDPOINT + '/forgot-password', {
+    body: JSON.stringify({ email }),
+    method: 'POST',
+  });
+}
+
+export async function verifyRestCodeApi(data: {
+  email: string;
+  resetCode: string;
+}) {
+  return fetcher<void>(BASE_ENDPOINT + '/verify-code', {
+    body: JSON.stringify(data),
+    method: 'POST',
+  });
+}
+
+export async function resetPasswordApi(data: {
+  confirmPassword: string;
+  newPassword: string;
+  email: string;
+}) {
+  return fetcher<{ message: string }>(BASE_ENDPOINT + '/reset-password', {
+    body: JSON.stringify(data),
+    method: 'PATCH',
   });
 }

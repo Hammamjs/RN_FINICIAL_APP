@@ -1,20 +1,25 @@
 import { Link, router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  TextInput as RNTextInput,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+ KeyboardAvoidingView,
+ Platform,
+ Pressable,
+ TextInput as RNTextInput,
+ ScrollView,
+ StyleSheet,
+ Text,
+ View,
 } from 'react-native';
 
 import Screen from '@/shared/components/screen';
+import { Spinner } from '@/shared/components/spinner';
 import { ThemeMode } from '@/shared/context/themeContext';
+import { useAsync } from '@/shared/hooks';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { useTranslation } from '@/shared/hooks/useTranslation';
+import { forgotPasswordApi, verifyRestCodeApi } from '../api/auth.api';
+import { useLoadStoredEmail } from '../hooks/useLoadStoredEmail';
+import { useVerifyResetCodeActions } from '../hooks/useVerifyResetCodeAction';
+import { useVerifyResetCodeCounter } from '../hooks/useVerifyResetCodeCounter';
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -24,90 +29,48 @@ export function VerifyResetPassword() {
   const { t } = useTranslation();
   const styles = createStyles(theme);
 
-  const [code, setCode] = useState(Array(CODE_LENGTH).fill(''));
-  const [error, setError] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  const { canResend, secondsLeft, resetCounter } =
+    useVerifyResetCodeCounter(RESEND_SECONDS);
 
-  const inputs = useRef<Array<RNTextInput | null>>([]);
+  const email = useLoadStoredEmail();
 
-  useEffect(() => {
-    if (secondsLeft <= 0) return;
-    const timer = setInterval(() => {
-      setSecondsLeft((s) => s - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [secondsLeft]);
-
-  const handleChange = (text: string, index: number) => {
-    if (text.length > 1) {
-      const digits = text.replace(/\D/g, '').slice(0, CODE_LENGTH).split('');
-      const next = Array(CODE_LENGTH).fill('');
-      digits.forEach((d, i) => (next[i] = d));
-      setCode(next);
-      const lastFilled = Math.min(digits.length, CODE_LENGTH) - 1;
-      if (lastFilled >= 0) inputs.current[lastFilled]?.focus();
-      if (digits.length === CODE_LENGTH) handleVerify(next.join(''));
-      return;
-    }
-
-    if (!/^\d?$/.test(text)) return;
-
-    const next = [...code];
-    next[index] = text;
-    setCode(next);
-    if (error) setError('');
-
-    if (text && index < CODE_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
-    }
-
-    if (text && index === CODE_LENGTH - 1 && next.every((d) => d !== '')) {
-      handleVerify(next.join(''));
-    }
+  const onSuccess = () => {
+    resetCounter();
+    router.replace('/reset-password');
   };
 
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !code[index] && index > 0) {
-      inputs.current[index - 1]?.focus();
-      const next = [...code];
-      next[index - 1] = '';
-      setCode(next);
-    }
-  };
+  const {
+    execute: handleVerify,
+    isLoading: isVerifying,
+    error: resendError,
+  } = useAsync({
+    asyncFunction: verifyRestCodeApi,
+    onSuccess,
+  });
 
-  const handleVerify = async (fullCode: string) => {
-    setIsVerifying(true);
-    setError('');
-    try {
-      // TODO: call your API
-      // await api.verifyResetCode({ code: fullCode });
-      router.replace('/reset-password');
-    } catch (err) {
-      setError(t.codeInvalid);
-      setCode(Array(CODE_LENGTH).fill(''));
-      inputs.current[0]?.focus();
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+  const {
+    execute: executeResend,
+    isLoading: isResending,
+    error: verifyError,
+  } = useAsync({
+    asyncFunction: forgotPasswordApi,
+  });
+
+  const { code, handleChange, handleKeyPress, registerInput } =
+    useVerifyResetCodeActions({
+      isDisabled: !email?.trim(),
+      length: CODE_LENGTH,
+      onComplete: async (resetCode) => {
+        if (!email?.trim()) return;
+        await handleVerify({ resetCode, email });
+      },
+    });
 
   const handleResend = async () => {
-    if (secondsLeft > 0 || isResending) return;
-    setIsResending(true);
-    try {
-      // TODO: call your API
-      // await api.requestResetOtp();
-      setSecondsLeft(RESEND_SECONDS);
-      setCode(Array(CODE_LENGTH).fill(''));
-      setError('');
-      inputs.current[0]?.focus();
-    } catch {
-      setError(t.codeSendError);
-    } finally {
-      setIsResending(false);
-    }
+    if (!canResend || isResending) return;
+    if (!email?.trim()) return;
+
+    await executeResend(email);
   };
 
   return (
@@ -131,34 +94,36 @@ export function VerifyResetPassword() {
             {code.map((digit, index) => (
               <RNTextInput
                 key={index}
-                ref={(ref) => {
-                  inputs.current[index] = ref;
-                }}
+                ref={registerInput(index)}
                 value={digit}
                 onChangeText={(text) => handleChange(text, index)}
                 onKeyPress={(e) => handleKeyPress(e, index)}
                 keyboardType="number-pad"
                 maxLength={CODE_LENGTH}
                 textContentType="oneTimeCode"
-                autoFocus={index === 0}
                 style={[
                   styles.codeBox,
                   digit ? styles.codeBoxFilled : null,
-                  error ? styles.codeBoxError : null,
+                  resendError ? styles.codeBoxError : null,
                 ]}
               />
             ))}
           </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {resendError || verifyError ? (
+            <Text style={styles.errorText}>{resendError ?? verifyError}</Text>
+          ) : null}
 
           <Pressable
             style={[styles.primaryButton, isVerifying && styles.buttonDisabled]}
-            onPress={() => handleVerify(code.join(''))}
+            onPress={() => {
+              if (!email?.trim()) return;
+              handleVerify({ resetCode: code.join(''), email });
+            }}
             disabled={isVerifying || code.some((d) => d === '')}
           >
             <Text style={styles.primaryButtonText}>
-              {isVerifying ? t.verifying : t.verifyCode}
+              {isVerifying ? <Spinner /> : t.verifyCode}
             </Text>
           </Pressable>
 
