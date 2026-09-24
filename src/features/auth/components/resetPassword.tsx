@@ -1,46 +1,69 @@
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+ KeyboardAvoidingView,
+ Platform,
+ Pressable,
+ ScrollView,
+ StyleSheet,
+ Text,
+ View,
 } from 'react-native';
 
 import Screen from '@/shared/components/screen';
+import { Spinner } from '@/shared/components/spinner';
 import PasswordInput from '@/shared/components/ui/passwordInput';
 import { ThemeMode } from '@/shared/context/themeContext';
+import { useAsync } from '@/shared/hooks';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { useTranslation } from '@/shared/hooks/useTranslation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import { resetPasswordApi } from '../api/auth.api';
+import { useLoadStoredEmail } from '../hooks/useLoadStoredEmail';
+import {
+ RESET_PASSWORD_DEFAULT_VALUES,
+ ResetPasswordValidation,
+ TResetPasswordValidation,
+} from '../schema/resetPassword.validation';
+import { translation } from '../utils/translationResetPassword';
 
 export function ResetPasswordComponent() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const styles = createStyles(theme);
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const email = useLoadStoredEmail();
 
-  const handleReset = () => {
-    if (password.length < 8) {
-      setError(t.passReq.requirements.minLength);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError(t.passReq.requirements.match);
-      return;
-    }
+  const translatedResetPasswordValidation = ResetPasswordValidation(
+    translation(t),
+  );
 
-    setError('');
-    // TODO: call your API to actually reset the password
-    // await api.resetPassword({ token, password });
+  const form = useForm<TResetPasswordValidation>({
+    resolver: zodResolver(translatedResetPasswordValidation),
+    mode: 'onBlur',
+  });
 
+  useEffect(() => {
+    if (!email) return;
+    form.reset({
+      ...RESET_PASSWORD_DEFAULT_VALUES,
+      email,
+    });
+  }, [email, form]);
+
+  const onSuccess = () => {
     router.replace('/sign-in');
   };
+
+  const { execute, error, isLoading } = useAsync({
+    asyncFunction: resetPasswordApi,
+    onSuccess,
+  });
+
+  const handleReset = form.handleSubmit(async (data) => {
+    await execute(data);
+  });
 
   return (
     <Screen>
@@ -60,26 +83,34 @@ export function ResetPasswordComponent() {
           </View>
 
           <View style={styles.form}>
-            <PasswordInput
-              label={t.newPassword}
-              placeholder={t.enterPassword}
-              value={password}
-              onChangeText={(text: string) => {
-                setPassword(text);
-                if (error) setError('');
-              }}
-              style={styles.input}
+            <Controller
+              control={form.control}
+              name="newPassword"
+              render={({ field, fieldState }) => (
+                <PasswordInput
+                  label={t.newPassword}
+                  placeholder={t.newPassword}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  style={styles.input}
+                  error={fieldState.error?.message}
+                />
+              )}
             />
 
-            <PasswordInput
-              label={t.confirmPassword}
-              placeholder={t.enterConfirmPass}
-              value={confirmPassword}
-              onChangeText={(text: string) => {
-                setConfirmPassword(text);
-                if (error) setError('');
-              }}
-              style={styles.input}
+            <Controller
+              control={form.control}
+              name="confirmPassword"
+              render={({ field, fieldState }) => (
+                <PasswordInput
+                  label={t.confirmPassword}
+                  placeholder={t.enterConfirmPass}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  style={styles.input}
+                  error={fieldState.error?.message}
+                />
+              )}
             />
 
             {error ? (
@@ -91,7 +122,9 @@ export function ResetPasswordComponent() {
             )}
 
             <Pressable style={styles.primaryButton} onPress={handleReset}>
-              <Text style={styles.primaryButtonText}>{t.resetPassword}</Text>
+              <Text style={styles.primaryButtonText}>
+                {isLoading ? <Spinner /> : t.resetPassword}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>

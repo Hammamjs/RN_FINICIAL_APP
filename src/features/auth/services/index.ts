@@ -1,0 +1,1 @@
+export { authenticatedFetcher } from './authenticatedFetcher';

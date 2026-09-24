@@ -10,12 +10,15 @@ export async function authenticatedFetcher<T>(
   endpoint: string,
   options: RequestInit = {},
 ) {
+  const isFormData =
+    typeof FormData !== 'undefined' && options.body instanceof FormData;
+
   const request = (accessToken?: string): Promise<Response> =>
     fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers: {
         ...options.headers,
-        'Content-Type': 'Application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'Application/json' }),
         ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
       },
     });

@@ -16,9 +16,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSignIn } from '../hooks/useSignIn';
 import { useSigninWithGoogle } from '../hooks/useSigninWithGoogle';
 import {
-  DEFAULT_SIGNIN_VALUES,
-  SignInValidation,
-  TSignInValidation,
+ DEFAULT_SIGNIN_VALUES,
+ SignInValidation,
+ TSignInValidation,
 } from '../schema/signIn.validation';
 
 export function SignInComponent() {
@@ -29,7 +29,7 @@ export function SignInComponent() {
 
   const { t, language } = useTranslation();
 
-  const { signin, error, isLoading } = useSignIn();
+  const { execute: signin, error, isLoading } = useSignIn();
 
   const form = useForm<TSignInValidation>({
     resolver: zodResolver(SignInValidation),
@@ -49,11 +49,11 @@ export function SignInComponent() {
   const {
     error: googleSigninError,
     isLoading: isGoogleSigning,
-    signinWithGoogle,
+    execute: signinWithGoogle,
   } = useSigninWithGoogle();
 
   const handleGoogleAuth = async (): Promise<void> => {
-    await signinWithGoogle();
+    await signinWithGoogle({});
   };
 
   return (
@@ -127,7 +127,11 @@ export function SignInComponent() {
             <View style={styles.divider} />
           </View>
 
-          <Pressable style={styles.googleButton} onPress={handleGoogleAuth}>
+          <Pressable
+            style={styles.googleButton}
+            onPress={handleGoogleAuth}
+            disabled={isGoogleSigning}
+          >
             <Ionicons
               name="logo-google"
               size={22}
